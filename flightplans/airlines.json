@@ -1,5 +1,7 @@
 {
   "airlines": [
+    { "name": "AeroMexico", "file": "aeromexico.txt" },
+    { "name": "AeroMexico Connect", "file": "connect.txt" },
     { "name": "Interjet", "file": "interjet.txt" },
     { "name": "Viva Aerobus", "file": "viva.txt" },
     { "name": "Iberia", "file": "iberia.txt" }
