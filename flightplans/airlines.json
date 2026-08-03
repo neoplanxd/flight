@@ -1,0 +1,6 @@
+{
+  "airlines": [
+    { "name": "Interjet", "file": "interjet.txt" },
+    { "name": "Iberia", "file": "iberia.txt" }
+  ]
+}

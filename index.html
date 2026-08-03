@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispatch Portal - Xbox Flight Sim</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
+    
+    h1 { font-size: 1.5rem; text-align: center; color: var(--accent); margin-bottom: 5px; }
+    p.sub { text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+
+    .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+    
+    select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg); color: var(--text); font-size: 1rem; outline: none; }
+    select:focus { border-color: var(--accent); }
+    
+    button { background-color: var(--accent); color: #0f172a; font-weight: bold; margin-top: 15px; cursor: pointer; border: none; transition: opacity 0.2s; }
+    button:active { opacity: 0.8; }
+    button:disabled { background-color: var(--border); color: var(--text-dim); cursor: not-allowed; }
+
+    .flight-info { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+    .route-header { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: bold; color: var(--accent); }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; color: var(--text-dim); }
+    .details span { color: var(--text); font-weight: 600; }
+
+    .simbrief-btn { display: block; text-align: center; background-color: #10b981; color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div>
+    <h1>Dispatch Portal</h1>
+    <p class="sub">Xbox Flight Sim Companion</p>
+  </div>
+
+  <div class="card">
+    <label for="airline-select">Seleccionar Aerolínea</label>
+    <select id="airline-select" onchange="loadFlightPlan()">
+      <option value="">-- Cargando lista --</option>
+    </select>
+
+    <button id="gen-btn" onclick="generateFlight()" disabled>Generar Vuelo Aleatorio (A320)</button>
+  </div>
+
+  <div class="card" id="result-card" style="display: none;">
+    <label>Vuelo Asignado</label>
+    <div class="flight-info">
+      <div class="route-header">
+        <span id="dep-icao">----</span> ✈️ <span id="arr-icao">----</span>
+      </div>
+      <div class="details">
+        <div>Origen: <span id="dep-name">--</span></div>
+        <div>Destino: <span id="arr-name">--</span></div>
+        <div>Número Vuelo: <span id="flight-num">--</span></div>
+        <div>Equipo: <span>A320</span></div>
+      </div>
+      <a id="simbrief-link" class="simbrief-btn" target="_blank" href="#">Enviar a SimBrief 🚀</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mapeo básico de aeropuertos para visualización
+  const airports = {
+    "MMMX": "CDMX", "MMGL": "Guadalajara", "MMMY": "Monterrey", "MMUN": "Cancún",
+    "LEMD": "Madrid", "LEBL": "Barcelona", "EGLL": "Londres", "KJFK": "Nueva York",
+    "KMIA": "Miami", "KSFO": "San Francisco"
+  };
+
+  let currentFlights = [];
+
+  // Cargar selector de aerolíneas automáticamente
+  async function init() {
+    const select = document.getElementById('airline-select');
+    try {
+      const res = await fetch('flightplans/airlines.json');
+      const data = await res.json();
+      select.innerHTML = '<option value="">-- Elige una aerolínea --</option>';
+      data.airlines.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.file;
+        opt.textContent = item.name;
+        select.appendChild(opt);
+      });
+    } catch (e) {
+      select.innerHTML = '<option value="">Error cargando aerolíneas</option>';
+    }
+  }
+
+  // Cargar y parsear archivo .txt de AIG
+  async function loadFlightPlan() {
+    const file = document.getElementById('airline-select').value;
+    const btn = document.getElementById('gen-btn');
+    if (!file) { btn.disabled = true; return; }
+
+    try {
+      const res = await fetch(`flightplans/${file}`);
+      const text = await res.text();
+      
+      // Parsear líneas de vuelos de AIG
+      const lines = text.split('\n');
+      currentFlights = [];
+
+      lines.forEach(line => {
+        if (line.startsWith('AC#') || line.startsWith('//')) return;
+        const parts = line.split(',');
+        if (parts.length >= 10) {
+          // Extraer origen, destino y número de vuelo
+          const dep = parts[5] ? parts[5].trim() : '';
+          const arr = parts[8] ? parts[8].trim() : '';
+          const fn = parts[10] ? parts[10].trim() : '100';
+          if (dep && arr) currentFlights.push({ dep, arr, fn });
+        }
+      });
+
+      btn.disabled = currentFlights.length === 0;
+    } catch (e) {
+      alert('Error leyendo el plan de vuelo');
+      btn.disabled = true;
+    }
+  }
+
+  // Generar vuelo aleatorio
+  function generateFlight() {
+    if (!currentFlights.length) return;
+    const flight = currentFlights[Math.floor(Math.random() * currentFlights.length)];
+    
+    document.getElementById('dep-icao').textContent = flight.dep;
+    document.getElementById('arr-icao').textContent = flight.arr;
+    document.getElementById('dep-name').textContent = airports[flight.dep] || flight.dep;
+    document.getElementById('arr-name').textContent = airports[flight.arr] || flight.arr;
+    document.getElementById('flight-num').textContent = flight.fn;
+
+    // Enlace dinámico a SimBrief
+    const sbUrl = `https://www.simbrief.com/system/dispatch.php?type=A20N&orig=${flight.dep}&dest=${flight.arr}&fltnum=${flight.fn}`;
+    document.getElementById('simbrief-link').href = sbUrl;
+
+    document.getElementById('result-card').style.display = 'block';
+  }
+
+  init();
+</script>
+</body>
+</html>
