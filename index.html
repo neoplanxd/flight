@@ -3,156 +3,312 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dispatch Portal - Xbox Flight Sim</title>
+  <title>Dispatch Portal - Xbox Flight Sim Companion</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --accent: #38bdf8;
-      --text: #f8fafc;
-      --text-dim: #94a3b8;
-      --border: #334155;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
-    
-    h1 { font-size: 1.5rem; text-align: center; color: var(--accent); margin-bottom: 5px; }
-    p.sub { text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-    .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-    label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
-    
-    select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg); color: var(--text); font-size: 1rem; outline: none; }
-    select:focus { border-color: var(--accent); }
-    
-    button { background-color: var(--accent); color: #0f172a; font-weight: bold; margin-top: 15px; cursor: pointer; border: none; transition: opacity 0.2s; }
-    button:active { opacity: 0.8; }
-    button:disabled { background-color: var(--border); color: var(--text-dim); cursor: not-allowed; }
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
 
-    .flight-info { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-    .route-header { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: bold; color: var(--accent); }
-    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; color: var(--text-dim); }
-    .details span { color: var(--text); font-weight: 600; }
+    h1 {
+      font-size: 2rem;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
 
-    .simbrief-btn { display: block; text-align: center; background-color: #10b981; color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+    p.subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f8fafc;
+      font-size: 1rem;
+      outline: none;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2338bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: #38bdf8;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background-color: #0284c7;
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #0369a1;
+    }
+
+    .result-box {
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .result-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .result-label {
+      color: #94a3b8;
+    }
+
+    .result-value {
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    .simbrief-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 16px;
+      padding: 12px;
+      background-color: #10b981;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .simbrief-btn:hover {
+      background-color: #059669;
+    }
+
+    .error-text {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div>
+  <header>
     <h1>Dispatch Portal</h1>
-    <p class="sub">Xbox Flight Sim Companion</p>
-  </div>
+    <p class="subtitle">Xbox Flight Sim Companion</p>
+  </header>
 
-  <div class="card">
-    <label for="airline-select">Seleccionar Aerolínea</label>
-    <select id="airline-select" onchange="loadFlightPlan()">
-      <option value="">-- Cargando lista --</option>
-    </select>
-
-   <button id="generateBtn" class="btn">Generar Vuelo Aleatorio (A320)</button>
-  </div>
-
-  <div class="card" id="result-card" style="display: none;">
-    <label>Vuelo Asignado</label>
-    <div class="flight-info">
-      <div class="route-header">
-        <span id="dep-icao">----</span> ✈️ <span id="arr-icao">----</span>
-      </div>
-      <div class="details">
-        <div>Origen: <span id="dep-name">--</span></div>
-        <div>Destino: <span id="arr-name">--</span></div>
-        <div>Número Vuelo: <span id="flight-num">--</span></div>
-        <div>Equipo: <span>A320</span></div>
-      </div>
-      <a id="simbrief-link" class="simbrief-btn" target="_blank" href="#">Enviar a SimBrief 🚀</a>
+  <main class="card">
+    <div class="form-group">
+      <label for="airlineSelect">SELECCIONAR AEROLÍNEA</label>
+      <select id="airlineSelect">
+        <option value="">Cargando lista...</option>
+      </select>
     </div>
-  </div>
-</div>
 
-<script>
-  // Mapeo básico de aeropuertos para visualización
-  const airports = {
-    "MMMX": "CDMX", "MMGL": "Guadalajara", "MMMY": "Monterrey", "MMUN": "Cancún",
-    "LEMD": "Madrid", "LEBL": "Barcelona", "EGLL": "Londres", "KJFK": "Nueva York",
-    "KMIA": "Miami", "KSFO": "San Francisco"
-  };
+    <button id="generateBtn" class="btn">Generar Vuelo Aleatorio (A320)</button>
 
-  let currentFlights = [];
+    <p id="errorMsg" class="error-text" style="display: none;"></p>
 
-  // Cargar selector de aerolíneas automáticamente
-  async function init() {
-    const select = document.getElementById('airline-select');
-    try {
-      const res = await fetch('flightplans/airlines.json');
-      const data = await res.json();
-      select.innerHTML = '<option value="">-- Elige una aerolínea --</option>';
-      data.airlines.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.file;
-        opt.textContent = item.name;
-        select.appendChild(opt);
-      });
-    } catch (e) {
-      select.innerHTML = '<option value="">Error cargando aerolíneas</option>';
+    <div id="resultBox" class="result-box">
+      <div class="result-item">
+        <span class="result-label">Vuelo:</span>
+        <span id="resFlight" class="result-value">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Origen:</span>
+        <span id="resDep" class="result-value">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Destino:</span>
+        <span id="resArr" class="result-value">-</span>
+      </div>
+      <a id="simbriefLink" href="#" target="_blank" class="simbrief-btn">Enviar a SimBrief</a>
+    </div>
+  </main>
+
+  <script>
+    const airlineSelect = document.getElementById('airlineSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultBox = document.getElementById('resultBox');
+    const errorMsg = document.getElementById('errorMsg');
+
+    let currentRoutes = [];
+
+    // 1. Cargar lista de aerolíneas desde el JSON
+    async function initAirlines() {
+      try {
+        const response = await fetch('flightplans/airlines.json');
+        if (!response.ok) throw new Error('No se encontró flightplans/airlines.json');
+        
+        const data = await response.json();
+        
+        airlineSelect.innerHTML = '<option value="">-- Selecciona una aerolínea --</option>';
+        data.airlines.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.file;
+          option.textContent = item.name;
+          airlineSelect.appendChild(option);
+        });
+      } catch (err) {
+        airlineSelect.innerHTML = '<option value="">Error al cargar aerolíneas</option>';
+        showError(err.message);
+      }
     }
-  }
 
-  // Cargar y parsear archivo .txt de AIG
-  async function loadFlightPlan() {
-    const file = document.getElementById('airline-select').value;
-    const btn = document.getElementById('gen-btn');
-    if (!file) { btn.disabled = true; return; }
+    // 2. Al cambiar la opción en el menú desplegable
+    airlineSelect.addEventListener('change', async (e) => {
+      const fileName = e.target.value;
+      resultBox.style.display = 'none';
+      hideError();
+      currentRoutes = [];
 
-    try {
-      const res = await fetch(`flightplans/${file}`);
-      const text = await res.text();
-      
-      // Parsear líneas de vuelos de AIG
+      if (!fileName) return;
+
+      try {
+        const response = await fetch(`flightplans/${fileName}`);
+        if (!response.ok) throw new Error(`No se encontró el archivo flightplans/${fileName}`);
+        
+        const textData = await response.text();
+        currentRoutes = parseAigFile(textData);
+        
+        if (currentRoutes.length === 0) {
+          throw new Error(`El archivo ${fileName} no tiene rutas válidas reconocibles.`);
+        }
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    // 3. Parser ultra-flexible para cualquier formato AIG o texto plano
+    function parseAigFile(text) {
       const lines = text.split('\n');
-      currentFlights = [];
+      const parsedRoutes = [];
 
       lines.forEach(line => {
-        if (line.startsWith('AC#') || line.startsWith('//')) return;
-        const parts = line.split(',');
-        if (parts.length >= 10) {
-          // Extraer origen, destino y número de vuelo
-          const dep = parts[5] ? parts[5].trim() : '';
-          const arr = parts[8] ? parts[8].trim() : '';
-          const fn = parts[10] ? parts[10].trim() : '100';
-          if (dep && arr) currentFlights.push({ dep, arr, fn });
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('AC#')) return;
+
+        // Extraer códigos ICAO de 4 letras en mayúsculas (ej: LEMD, LEBL)
+        const icaoMatches = trimmed.match(/\b[A-Z]{4}\b/g);
+        
+        // Intentar extraer el número de vuelo
+        const parts = trimmed.split(',');
+        let flightNum = '';
+        if (parts.length >= 6 && parts[5]) {
+          flightNum = parts[5].replace(/\D/g, '');
+        }
+
+        if (icaoMatches && icaoMatches.length >= 2) {
+          parsedRoutes.push({
+            flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
+            depICAO: icaoMatches[0],
+            arrICAO: icaoMatches[1]
+          });
         }
       });
 
-      btn.disabled = currentFlights.length === 0;
-    } catch (e) {
-      alert('Error leyendo el plan de vuelo');
-      btn.disabled = true;
+      return parsedRoutes;
     }
-  }
 
-  // Generar vuelo aleatorio
-  function generateFlight() {
-    if (!currentFlights.length) return;
-    const flight = currentFlights[Math.floor(Math.random() * currentFlights.length)];
-    
-    document.getElementById('dep-icao').textContent = flight.dep;
-    document.getElementById('arr-icao').textContent = flight.arr;
-    document.getElementById('dep-name').textContent = airports[flight.dep] || flight.dep;
-    document.getElementById('arr-name').textContent = airports[flight.arr] || flight.arr;
-    document.getElementById('flight-num').textContent = flight.fn;
+    // 4. Generar vuelo aleatorio
+    generateBtn.addEventListener('click', () => {
+      if (!airlineSelect.value) {
+        showError('Por favor selecciona primero una aerolínea.');
+        return;
+      }
 
-    // Enlace dinámico a SimBrief
-    const sbUrl = `https://www.simbrief.com/system/dispatch.php?type=A20N&orig=${flight.dep}&dest=${flight.arr}&fltnum=${flight.fn}`;
-    document.getElementById('simbrief-link').href = sbUrl;
+      if (currentRoutes.length === 0) {
+        showError('No hay rutas disponibles para la aerolínea seleccionada.');
+        return;
+      }
 
-    document.getElementById('result-card').style.display = 'block';
-  }
+      hideError();
+      const randomRoute = currentRoutes[Math.floor(Math.random() * currentRoutes.length)];
+      
+      document.getElementById('resFlight').textContent = randomRoute.flightNum;
+      document.getElementById('resDep').textContent = randomRoute.depICAO;
+      document.getElementById('resArr').textContent = randomRoute.arrICAO;
 
-  init();
-</script>
+      const simbriefUrl = `https://www.simbrief.com/system/dispatch.php?type=A320&orig=${randomRoute.depICAO}&dest=${randomRoute.arrICAO}&fltnum=${randomRoute.flightNum}`;
+      document.getElementById('simbriefLink').href = simbriefUrl;
+
+      resultBox.style.display = 'block';
+    });
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+    }
+
+    initAirlines();
+  </script>
 </body>
 </html>
