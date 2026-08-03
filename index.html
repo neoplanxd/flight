@@ -250,37 +250,27 @@ function parseAigFile(text) {
 
   lines.forEach(line => {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('//')) return;
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('AC#')) return;
 
-    // Split por comas eliminando comillas si existen
-    const parts = trimmed.split(',').map(p => p.trim().replace(/^["']|["']$/g, ''));
+    // 1. Extraer estrictamente códigos ICAO de 4 letras en MAYÚSCULAS
+    const icaoMatches = trimmed.match(/\b[A-Z]{4}\b/g);
+    
+    // 2. Intentar extraer el número de vuelo de las comas (AIG estándar)
+    const parts = trimmed.split(',');
+    let flightNum = '';
+    
+    if (parts.length >= 6 && parts[5]) {
+      const cleanFlt = parts[5].replace(/\D/g, '');
+      if (cleanFlt.length > 0) flightNum = cleanFlt;
+    }
 
-    // Estructura AIG típica: AC#X, Reg, %, Week, IFR, FltNum, DepTime, DepICAO, ArrTime, ArrICAO...
-    if (parts.length >= 10) {
-      const flightNum = parts[5] ? parts[5].replace(/\D/g, '') : '';
-      const depICAO = parts[7];
-      const arrICAO = parts[9];
-
-      if (depICAO && arrICAO && depICAO.length >= 3 && arrICAO.length >= 3) {
-        parsedRoutes.push({
-          flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
-          depICAO: depICAO.toUpperCase(),
-          arrICAO: arrICAO.toUpperCase()
-        });
-      }
-    } else {
-      // Búsqueda genérica para otros formatos de texto
-      const matches = trimmed.match(/[A-Za-z0-9]+/g);
-      if (matches && matches.length >= 2) {
-        const potentialIcaos = matches.filter(m => m.length >= 3 && m.length <= 4 && isNaN(m));
-        if (potentialIcaos.length >= 2) {
-          parsedRoutes.push({
-            flightNum: Math.floor(100 + Math.random() * 8999).toString(),
-            depICAO: potentialIcaos[0].toUpperCase(),
-            arrICAO: potentialIcaos[1].toUpperCase()
-          });
-        }
-      }
+    // Solo guardamos si encontramos al menos 2 códigos ICAO válidos
+    if (icaoMatches && icaoMatches.length >= 2) {
+      parsedRoutes.push({
+        flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
+        depICAO: icaoMatches[0],
+        arrICAO: icaoMatches[1]
+      });
     }
   });
 
