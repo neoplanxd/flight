@@ -158,17 +158,6 @@
       </select>
     </div>
 
-    <div class="form-group">
-      <label for="aircraftSelect">EQUIPO / AVIAÓN</label>
-      <select id="aircraftSelect">
-        <option value="A320">Airbus A320 (Corto / Medio Radio)</option>
-        <option value="A339">Airbus A330-900 / A330</option>
-        <option value="A359">Airbus A350-900 (Largo Radio)</option>
-        <option value="B781">Boeing 787-10</option>
-        <option value="B738">Boeing 737-800</option>
-      </select>
-    </div>
-
     <button id="generateBtn">Generar Vuelo Aleatorio</button>
 
     <div id="errorMsg" class="error-msg"></div>
@@ -186,7 +175,6 @@
 
   <script>
     const airlineSelect = document.getElementById('airlineSelect');
-    const aircraftSelect = document.getElementById('aircraftSelect');
     const generateBtn = document.getElementById('generateBtn');
     const resultBox = document.getElementById('resultBox');
     const errorMsg = document.getElementById('errorMsg');
@@ -285,13 +273,12 @@
 
       hideError();
       const randomRoute = currentRoutes[Math.floor(Math.random() * currentRoutes.length)];
-      const selectedAircraft = aircraftSelect.value;
       
       document.getElementById('resFlight').textContent = randomRoute.flightNum;
       document.getElementById('resDep').textContent = randomRoute.depICAO;
       document.getElementById('resArr').textContent = randomRoute.arrICAO;
 
-      const simbriefUrl = `https://www.simbrief.com/system/dispatch.php?type=${selectedAircraft}&orig=${randomRoute.depICAO}&dest=${randomRoute.arrICAO}&fltnum=${randomRoute.flightNum}`;
+      const simbriefUrl = `https://www.simbrief.com/system/dispatch.php?orig=${randomRoute.depICAO}&dest=${randomRoute.arrICAO}&fltnum=${randomRoute.flightNum}`;
       document.getElementById('simbriefLink').href = simbriefUrl;
 
       resultBox.style.display = 'block';
