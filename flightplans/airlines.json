@@ -4,6 +4,13 @@
     { "name": "AeroMexico Connect", "file": "connect.txt" },
     { "name": "Interjet", "file": "interjet.txt" },
     { "name": "Viva Aerobus", "file": "viva.txt" },
+    { "name": "Jetblue", "file": "jetblue.txt" },
+    { "name": "SAS", "file": "sas.txt" },
+    { "name": "Arajet", "file": "arajet.txt" },
+    { "name": "Transvia", "file": "transvia.txt" },
+    { "name": "Lufthansa", "file": "lufthansa.txt" },
+    { "name": "British", "file": "british.txt" },
+    { "name": "Air Canada", "file": "canada.txt" },
     { "name": "Iberia", "file": "iberia.txt" }
   ]
 }
