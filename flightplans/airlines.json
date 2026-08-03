@@ -1,6 +1,7 @@
 {
   "airlines": [
     { "name": "Interjet", "file": "interjet.txt" },
+    { "name": "Viva Aerobus", "file": "viva.txt" },
     { "name": "Iberia", "file": "iberia.txt" }
   ]
 }
