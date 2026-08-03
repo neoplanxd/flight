@@ -249,28 +249,30 @@ function parseAigFile(text) {
   const parsedRoutes = [];
 
   lines.forEach(line => {
-    const trimmed = line.trim();
+    // 1. Convertimos todo a mayúsculas y quitamos espacios al inicio/final
+    const trimmed = line.trim().toUpperCase();
     if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('AC#')) return;
 
-    // 1. Extraer estrictamente códigos ICAO de 4 letras en MAYÚSCULAS
-    const icaoMatches = trimmed.match(/\b[A-Z]{4}\b/g);
-    
-    // 2. Intentar extraer el número de vuelo de las comas (AIG estándar)
-    const parts = trimmed.split(',');
-    let flightNum = '';
-    
-    if (parts.length >= 6 && parts[5]) {
-      const cleanFlt = parts[5].replace(/\D/g, '');
-      if (cleanFlt.length > 0) flightNum = cleanFlt;
-    }
+    // 2. Separamos por comas y limpiamos cada elemento
+    const parts = trimmed.split(',').map(p => p.trim());
 
-    // Solo guardamos si encontramos al menos 2 códigos ICAO válidos
-    if (icaoMatches && icaoMatches.length >= 2) {
-      parsedRoutes.push({
-        flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
-        depICAO: icaoMatches[0],
-        arrICAO: icaoMatches[1]
-      });
+    // En formato AIG estándar:
+    // parts[5] = Número de vuelo
+    // parts[7] = Origen (ICAO)
+    // parts[9] = Destino (ICAO)
+    if (parts.length >= 10) {
+      const flightNum = parts[5] ? parts[5].replace(/\D/g, '') : '';
+      const dep = parts[7];
+      const arr = parts[9];
+
+      // Aceptamos cualquier código de 3 o 4 caracteres alfanuméricos
+      if (dep && arr && dep.length >= 3 && arr.length >= 3) {
+        parsedRoutes.push({
+          flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
+          depICAO: dep,
+          arrICAO: arr
+        });
+      }
     }
   });
 
