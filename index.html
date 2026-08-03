@@ -249,29 +249,35 @@ function parseAigFile(text) {
   const parsedRoutes = [];
 
   lines.forEach(line => {
-    // 1. Convertimos todo a mayúsculas y quitamos espacios al inicio/final
-    const trimmed = line.trim().toUpperCase();
-    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('AC#')) return;
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('//')) return;
 
-    // 2. Separamos por comas y limpiamos cada elemento
-    const parts = trimmed.split(',').map(p => p.trim());
+    // Buscamos patrones de: FlttNum, DestinoICAO
+    // Ejemplo: ...,6833,SCEL,... o ...,6409,MMMX,...
+    const matches = [...trimmed.matchAll(/,([0-9]{1,4}),([A-Z]{4})\b/g)];
 
-    // En formato AIG estándar:
-    // parts[5] = Número de vuelo
-    // parts[7] = Origen (ICAO)
-    // parts[9] = Destino (ICAO)
-    if (parts.length >= 10) {
-      const flightNum = parts[5] ? parts[5].replace(/\D/g, '') : '';
-      const dep = parts[7];
-      const arr = parts[9];
+    if (matches.length > 0) {
+      for (let i = 0; i < matches.length; i++) {
+        const flightNum = matches[i][1];
+        const arrICAO = matches[i][2];
+        
+        // El origen de este tramo es el destino del tramo anterior.
+        // Si es el primer tramo de la línea, usaremos LEMD como base o el último del ciclo.
+        let depICAO = "LEMD"; 
+        if (i > 0) {
+          depICAO = matches[i - 1][2];
+        } else if (matches.length > 1) {
+          depICAO = matches[matches.length - 1][2];
+        }
 
-      // Aceptamos cualquier código de 3 o 4 caracteres alfanuméricos
-      if (dep && arr && dep.length >= 3 && arr.length >= 3) {
-        parsedRoutes.push({
-          flightNum: flightNum || Math.floor(100 + Math.random() * 8999).toString(),
-          depICAO: dep,
-          arrICAO: arr
-        });
+        // Evitamos vuelos donde origen y destino sean el mismo aeropuerto
+        if (depICAO !== arrICAO) {
+          parsedRoutes.push({
+            flightNum: flightNum,
+            depICAO: depICAO,
+            arrICAO: arrICAO
+          });
+        }
       }
     }
   });
