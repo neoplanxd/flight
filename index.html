@@ -213,11 +213,6 @@
     <div class="subtitle">Xbox Flight Sim Companion</div>
 
     <div class="form-group">
-      <label for="platformSelect">MI AVIÓN</label>
-      <select id="platformSelect"></select>
-    </div>
-
-    <div class="form-group">
       <label for="airlineSelect">SELECCIONAR AEROLÍNEA</label>
       <select id="airlineSelect">
         <option value="">Cargando aerolíneas...</option>
@@ -247,6 +242,10 @@
         <br>
         <span id="addonTag"></span>
       </div>
+      <div class="form-group" style="margin-top: 12px; margin-bottom: 0;">
+        <label for="platformSelect">MI AVIÓN</label>
+        <select id="platformSelect"></select>
+      </div>
       <a id="simbriefLink" class="simbrief-btn" target="_blank">Despachar en SimBrief</a>
     </div>
   </div>
@@ -263,6 +262,7 @@
 
     let currentRoutes = [];
     let lastFlightNum = null;
+    let lastGeneratedRoute = null;
     let airportsDB = {};
     let aircraftTypeRules = [];
     let addonsDB = { platforms: {} };
@@ -313,6 +313,10 @@
 
       platformSelect.addEventListener('change', () => {
         localStorage.setItem(PLATFORM_STORAGE_KEY, platformSelect.value);
+        if (lastGeneratedRoute) {
+          renderAircraftInfo(lastGeneratedRoute.aircraftType);
+          document.getElementById('simbriefLink').href = buildSimbriefUrl(lastGeneratedRoute);
+        }
       });
     }
 
@@ -350,6 +354,7 @@
       hideStatus();
       currentRoutes = [];
       lastFlightNum = null;
+      lastGeneratedRoute = null;
       generateBtn.disabled = true;
 
       if (!fileName) return;
@@ -455,6 +460,7 @@
 
       const randomRoute = pool[Math.floor(Math.random() * pool.length)];
       lastFlightNum = randomRoute.flightNum;
+      lastGeneratedRoute = randomRoute;
 
       document.getElementById('resFlight').textContent = randomRoute.flightNum;
       document.getElementById('resDep').textContent = randomRoute.depICAO;
