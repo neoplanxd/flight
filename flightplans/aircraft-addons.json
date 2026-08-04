@@ -1,0 +1,39 @@
+{
+  "_doc": "Traduce un código ICAO de tipo de aeronave (ver aircraft-types.json) al addon disponible según la plataforma que uses. Es genérico y compartido por todas las aerolíneas. Si el tipo no existe para tu plataforma, la app simplemente no muestra sugerencia de addon (el vuelo se genera igual con el ICAO real para SimBrief).",
+  "platforms": {
+    "xbox-mfs2024": {
+      "label": "Xbox Series X · MFS2024 (default)",
+      "aircraft": {
+        "B38M": "737 MAX 8 (default)",
+        "A20N": "A320neo (iniBuilds)",
+        "A21N": "A321neo (iniBuilds)",
+        "A332": "A330-200 (iniBuilds)",
+        "A339": "A330-900neo (iniBuilds)"
+      }
+    },
+    "pc-mfs2024": {
+      "label": "PC · MFS2024 (addons)",
+      "aircraft": {
+        "A319": "A319 (Fenix)",
+        "A320": "A320 (Fenix)",
+        "A20N": "A320neo (Fenix)",
+        "A321": "A321 (Fenix)",
+        "A21N": "A321neo (Fenix)",
+        "B738": "737-800 (PMDG)",
+        "B38M": "737-8 MAX (iFly)"
+      }
+    },
+    "xplane12": {
+      "label": "X-Plane 12",
+      "aircraft": {
+        "A319": "A319 (ToLiss)",
+        "A320": "A320 ceo (ToLiss)",
+        "A20N": "A320 neo (ToLiss)",
+        "A321": "A321 ceo (ToLiss)",
+        "A21N": "A321 neo (ToLiss)",
+        "B752": "757 (FlightFactor)",
+        "B763": "767 (FlightFactor)"
+      }
+    }
+  }
+}

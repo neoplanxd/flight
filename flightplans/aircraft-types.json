@@ -1,0 +1,101 @@
+{
+  "_doc": "Diccionario genérico: traduce el texto libre del comentario de flota en los .txt AIG/IAE a un código ICAO de tipo de aeronave estándar. Es independiente de la aerolínea -- se usa para TODAS. Si aparece un modelo nuevo que no matchea ningún patrón, el generador simplemente no manda el parámetro type= a SimBrief (no rompe nada); en ese caso agregar una regla nueva aquí, nunca en el HTML.",
+  "_orden": "Los patrones se evalúan en orden: el primero que haga match (case-insensitive) gana. Los más específicos van primero.",
+  "rules": [
+    { "pattern": "747-8", "icao": "B748" },
+    { "pattern": "747-400", "icao": "B744" },
+    { "pattern": "747", "icao": "B744" },
+
+    { "pattern": "777-300ER", "icao": "B77W" },
+    { "pattern": "777-300", "icao": "B773" },
+    { "pattern": "777-200ER", "icao": "B77L" },
+    { "pattern": "777-200", "icao": "B772" },
+    { "pattern": "777F", "icao": "B77L" },
+    { "pattern": "777", "icao": "B772" },
+
+    { "pattern": "787-10", "icao": "B78X" },
+    { "pattern": "787-9", "icao": "B789" },
+    { "pattern": "787-8", "icao": "B788" },
+    { "pattern": "787", "icao": "B789" },
+
+    { "pattern": "767-300", "icao": "B763" },
+    { "pattern": "767-400", "icao": "B764" },
+    { "pattern": "767-200", "icao": "B762" },
+    { "pattern": "767", "icao": "B763" },
+
+    { "pattern": "757-300", "icao": "B753" },
+    { "pattern": "757-200", "icao": "B752" },
+    { "pattern": "757", "icao": "B752" },
+
+    { "pattern": "737 MAX 7", "icao": "B37M" },
+    { "pattern": "737 MAX 8", "icao": "B38M" },
+    { "pattern": "737 MAX 9", "icao": "B39M" },
+    { "pattern": "737 MAX 10", "icao": "B3XM" },
+    { "pattern": "737MAX7", "icao": "B37M" },
+    { "pattern": "737MAX8", "icao": "B38M" },
+    { "pattern": "737MAX9", "icao": "B39M" },
+    { "pattern": "737MAX", "icao": "B38M" },
+    { "pattern": "737-900", "icao": "B739" },
+    { "pattern": "737-800", "icao": "B738" },
+    { "pattern": "737-81", "icao": "B738" },
+    { "pattern": "737-8J", "icao": "B738" },
+    { "pattern": "737-700", "icao": "B737" },
+    { "pattern": "737-600", "icao": "B736" },
+    { "pattern": "737-85", "icao": "B738" },
+    { "pattern": "737", "icao": "B738" },
+
+    { "pattern": "A220-100", "icao": "BCS1" },
+    { "pattern": "A220-300", "icao": "BCS3" },
+    { "pattern": "A220", "icao": "BCS3" },
+
+    { "pattern": "A318", "icao": "A318" },
+
+    { "pattern": "A319neo", "icao": "A19N" },
+    { "pattern": "A319", "icao": "A319" },
+
+    { "pattern": "A320neo", "icao": "A20N" },
+    { "pattern": "A320ceo", "icao": "A320" },
+    { "pattern": "A320", "icao": "A320" },
+
+    { "pattern": "A321neo", "icao": "A21N" },
+    { "pattern": "A321ceo", "icao": "A321" },
+    { "pattern": "A321", "icao": "A321" },
+
+    { "pattern": "A330-200", "icao": "A332" },
+    { "pattern": "A330-300", "icao": "A333" },
+    { "pattern": "A330-900", "icao": "A339" },
+    { "pattern": "A330neo", "icao": "A339" },
+    { "pattern": "A330", "icao": "A332" },
+
+    { "pattern": "A340-600", "icao": "A346" },
+    { "pattern": "A340-300", "icao": "A343" },
+    { "pattern": "A340", "icao": "A343" },
+
+    { "pattern": "A350-1000", "icao": "A35K" },
+    { "pattern": "A350-900", "icao": "A359" },
+    { "pattern": "A350", "icao": "A359" },
+
+    { "pattern": "A380", "icao": "A388" },
+
+    { "pattern": "E170", "icao": "E170" },
+    { "pattern": "E175", "icao": "E175" },
+    { "pattern": "E190", "icao": "E190" },
+    { "pattern": "E195", "icao": "E195" },
+    { "pattern": "Embraer 170", "icao": "E170" },
+    { "pattern": "Embraer 175", "icao": "E175" },
+    { "pattern": "Embraer 190", "icao": "E190" },
+    { "pattern": "Embraer 195", "icao": "E195" },
+
+    { "pattern": "CRJ-700", "icao": "CRJ7" },
+    { "pattern": "CRJ-900", "icao": "CRJ9" },
+    { "pattern": "CRJ-1000", "icao": "CRJX" },
+    { "pattern": "CRJ", "icao": "CRJ9" },
+
+    { "pattern": "Q400", "icao": "DH8D" },
+    { "pattern": "Dash 8", "icao": "DH8D" },
+    { "pattern": "ATR 72", "icao": "AT76" },
+    { "pattern": "ATR72", "icao": "AT76" },
+    { "pattern": "ATR 42", "icao": "AT45" },
+    { "pattern": "ATR42", "icao": "AT45" }
+  ]
+}

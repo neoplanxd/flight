@@ -78,6 +78,11 @@
       background-size: 1.2em;
     }
 
+    select:focus, button:focus, .simbrief-btn:focus {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+
     button {
       background-color: #0284c7;
       color: #ffffff;
@@ -89,6 +94,20 @@
 
     button:active {
       background-color: #0369a1;
+    }
+
+    button:disabled {
+      background-color: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 10px;
+      color: #64748b;
+      min-height: 1.1em;
     }
 
     .error-msg {
@@ -113,12 +132,26 @@
       justify-content: space-between;
       align-items: center;
       margin: 16px 0;
+      gap: 12px;
+    }
+
+    .route-col {
+      flex: 1;
+      text-align: center;
     }
 
     .icao {
       font-size: 1.5rem;
       font-weight: 700;
       color: #f8fafc;
+      display: block;
+    }
+
+    .city {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 2px;
+      display: block;
     }
 
     .flight-num {
@@ -126,6 +159,34 @@
       font-size: 0.85rem;
       color: #38bdf8;
       font-weight: 600;
+    }
+
+    .aircraft-info {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px dashed #334155;
+    }
+
+    .aircraft-type {
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .addon-tag {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: #10b981;
+    }
+
+    .no-addon-tag {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: #64748b;
     }
 
     .simbrief-btn {
@@ -152,22 +213,39 @@
     <div class="subtitle">Xbox Flight Sim Companion</div>
 
     <div class="form-group">
+      <label for="platformSelect">SIMULADOR</label>
+      <select id="platformSelect"></select>
+    </div>
+
+    <div class="form-group">
       <label for="airlineSelect">SELECCIONAR AEROLÍNEA</label>
       <select id="airlineSelect">
         <option value="">Cargando aerolíneas...</option>
       </select>
     </div>
 
-    <button id="generateBtn">Generar Vuelo Aleatorio</button>
+    <button id="generateBtn" disabled>Generar Vuelo Aleatorio</button>
+    <div id="statusMsg" class="status-msg"></div>
 
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="resultBox" class="result-box">
       <div class="flight-num">VUELO <span id="resFlight">----</span></div>
       <div class="route-display">
-        <span id="resDep" class="icao">----</span>
+        <div class="route-col">
+          <span id="resDep" class="icao">----</span>
+          <span id="resDepCity" class="city"></span>
+        </div>
         <span style="color: #64748b;">✈</span>
-        <span id="resArr" class="icao">----</span>
+        <div class="route-col">
+          <span id="resArr" class="icao">----</span>
+          <span id="resArrCity" class="city"></span>
+        </div>
+      </div>
+      <div id="aircraftInfo" class="aircraft-info" style="display:none;">
+        <span id="aircraftType" class="aircraft-type"></span>
+        <br>
+        <span id="addonTag"></span>
       </div>
       <a id="simbriefLink" class="simbrief-btn" target="_blank">Despachar en SimBrief</a>
     </div>
@@ -175,19 +253,77 @@
 
   <script>
     const airlineSelect = document.getElementById('airlineSelect');
+    const platformSelect = document.getElementById('platformSelect');
     const generateBtn = document.getElementById('generateBtn');
     const resultBox = document.getElementById('resultBox');
     const errorMsg = document.getElementById('errorMsg');
+    const statusMsg = document.getElementById('statusMsg');
+
+    const PLATFORM_STORAGE_KEY = 'dispatchPortal.platform';
 
     let currentRoutes = [];
+    let lastFlightNum = null;
+    let airportsDB = {};
+    let aircraftTypeRules = [];
+    let addonsDB = { platforms: {} };
+
+    // ---------- Carga de catálogos genéricos (compartidos por TODAS las aerolíneas) ----------
+
+    async function loadJSON(path, label) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`No se encontró ${path}`);
+        return await res.json();
+      } catch (err) {
+        console.warn(`No se pudo cargar ${label}:`, err.message);
+        return null;
+      }
+    }
+
+    async function initCatalogs() {
+      const [airports, types, addons] = await Promise.all([
+        loadJSON('airports.json', 'airports.json'),
+        loadJSON('aircraft-types.json', 'aircraft-types.json'),
+        loadJSON('aircraft-addons.json', 'aircraft-addons.json')
+      ]);
+
+      airportsDB = airports || {};
+      aircraftTypeRules = (types && types.rules) || [];
+      addonsDB = addons || { platforms: {} };
+
+      initPlatformSelect();
+      initAirlines();
+    }
+
+    function initPlatformSelect() {
+      const platforms = addonsDB.platforms || {};
+      const keys = Object.keys(platforms);
+
+      platformSelect.innerHTML = '';
+      keys.forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = platforms[key].label || key;
+        platformSelect.appendChild(option);
+      });
+
+      const saved = localStorage.getItem(PLATFORM_STORAGE_KEY);
+      if (saved && platforms[saved]) {
+        platformSelect.value = saved;
+      }
+
+      platformSelect.addEventListener('change', () => {
+        localStorage.setItem(PLATFORM_STORAGE_KEY, platformSelect.value);
+      });
+    }
 
     async function initAirlines() {
       try {
         const response = await fetch('flightplans/airlines.json');
         if (!response.ok) throw new Error('No se encontró flightplans/airlines.json');
-        
+
         const data = await response.json();
-        
+
         airlineSelect.innerHTML = '<option value="">-- Selecciona una aerolínea --</option>';
         data.airlines.forEach(item => {
           const option = document.createElement('option');
@@ -201,64 +337,98 @@
       }
     }
 
+    // ---------- Carga y parseo del archivo de flightplans de la aerolínea seleccionada ----------
+
     airlineSelect.addEventListener('change', async (e) => {
       const fileName = e.target.value;
       resultBox.style.display = 'none';
       hideError();
+      hideStatus();
       currentRoutes = [];
+      lastFlightNum = null;
+      generateBtn.disabled = true;
 
       if (!fileName) return;
+
+      showStatus('Cargando rutas...');
 
       try {
         const response = await fetch(`flightplans/${fileName}`);
         if (!response.ok) throw new Error(`No se encontró el archivo flightplans/${fileName}`);
-        
+
         const textData = await response.text();
         currentRoutes = parseAigFile(textData);
-        
+
         if (currentRoutes.length === 0) {
           throw new Error(`El archivo ${fileName} no tiene rutas válidas reconocibles.`);
         }
+
+        showStatus(`${currentRoutes.length} rutas encontradas`);
+        generateBtn.disabled = false;
       } catch (err) {
+        hideStatus();
         showError(err.message);
       }
     });
 
+    // Detecta el tipo de aeronave ICAO a partir del texto libre del comentario de flota,
+    // ej: "// Aeromexico - Boeing 787-9 Dreamliner GE 2-Class..." -> "B789"
+    function detectAircraftType(commentText) {
+      const upper = commentText.toUpperCase();
+      for (const rule of aircraftTypeRules) {
+        if (upper.includes(rule.pattern.toUpperCase())) {
+          return rule.icao;
+        }
+      }
+      return null;
+    }
+
     function parseAigFile(text) {
-      const lines = text.split('\n');
+      const lines = text.split(/\r?\n/);
       const parsedRoutes = [];
+      let currentFleetComment = '';
+      let currentAircraftType = null;
 
       lines.forEach(line => {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('//')) return;
+        if (!trimmed) return;
+
+        if (trimmed.startsWith('//')) {
+          currentFleetComment = trimmed.replace(/^\/\//, '').trim();
+          currentAircraftType = detectAircraftType(currentFleetComment);
+          return;
+        }
 
         const matches = [...trimmed.matchAll(/,([0-9]{1,4}),([A-Z]{4})\b/g)];
 
-        if (matches.length > 0) {
-          for (let i = 0; i < matches.length; i++) {
-            const flightNum = matches[i][1];
-            const arrICAO = matches[i][2];
-            
-            let depICAO = "LEMD"; 
-            if (i > 0) {
-              depICAO = matches[i - 1][2];
-            } else if (matches.length > 1) {
-              depICAO = matches[matches.length - 1][2];
-            }
+        // Si solo hay un tramo en la línea no hay forma confiable de saber el
+        // aeropuerto de origen (no sabemos la base real de esa matrícula), así
+        // que la descartamos en vez de inventar un origen.
+        if (matches.length < 2) return;
 
-            if (depICAO !== arrICAO) {
-              parsedRoutes.push({
-                flightNum: flightNum,
-                depICAO: depICAO,
-                arrICAO: arrICAO
-              });
-            }
+        for (let i = 0; i < matches.length; i++) {
+          const flightNum = matches[i][1];
+          const arrICAO = matches[i][2];
+          // Ruta circular: el origen del primer tramo es el destino del último
+          // tramo de la semana (la aeronave regresa a su base).
+          const depICAO = i > 0 ? matches[i - 1][2] : matches[matches.length - 1][2];
+
+          if (depICAO !== arrICAO) {
+            parsedRoutes.push({
+              flightNum: flightNum,
+              depICAO: depICAO,
+              arrICAO: arrICAO,
+              aircraftType: currentAircraftType,
+              fleetComment: currentFleetComment
+            });
           }
         }
       });
 
       return parsedRoutes;
     }
+
+    // ---------- Generar vuelo aleatorio ----------
 
     generateBtn.addEventListener('click', () => {
       if (!airlineSelect.value) {
@@ -272,17 +442,73 @@
       }
 
       hideError();
-      const randomRoute = currentRoutes[Math.floor(Math.random() * currentRoutes.length)];
-      
+
+      let pool = currentRoutes;
+      if (currentRoutes.length > 1 && lastFlightNum !== null) {
+        const filtered = currentRoutes.filter(r => r.flightNum !== lastFlightNum);
+        if (filtered.length > 0) pool = filtered;
+      }
+
+      const randomRoute = pool[Math.floor(Math.random() * pool.length)];
+      lastFlightNum = randomRoute.flightNum;
+
       document.getElementById('resFlight').textContent = randomRoute.flightNum;
       document.getElementById('resDep').textContent = randomRoute.depICAO;
       document.getElementById('resArr').textContent = randomRoute.arrICAO;
+      document.getElementById('resDepCity').textContent = cityLabel(randomRoute.depICAO);
+      document.getElementById('resArrCity').textContent = cityLabel(randomRoute.arrICAO);
 
-      const simbriefUrl = `https://www.simbrief.com/system/dispatch.php?orig=${randomRoute.depICAO}&dest=${randomRoute.arrICAO}&fltnum=${randomRoute.flightNum}`;
+      renderAircraftInfo(randomRoute.aircraftType, randomRoute.fleetComment);
+
+      const simbriefUrl = buildSimbriefUrl(randomRoute);
       document.getElementById('simbriefLink').href = simbriefUrl;
 
       resultBox.style.display = 'block';
     });
+
+    function cityLabel(icao) {
+      const entry = airportsDB[icao];
+      if (!entry) return '';
+      return entry.city || entry.name || '';
+    }
+
+    function renderAircraftInfo(aircraftType, fleetComment) {
+      const box = document.getElementById('aircraftInfo');
+      const typeEl = document.getElementById('aircraftType');
+      const addonEl = document.getElementById('addonTag');
+
+      if (!aircraftType) {
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+      typeEl.textContent = aircraftType;
+
+      const platformKey = platformSelect.value;
+      const platform = addonsDB.platforms && addonsDB.platforms[platformKey];
+      const addonName = platform && platform.aircraft && platform.aircraft[aircraftType];
+
+      if (addonName) {
+        addonEl.className = 'addon-tag';
+        addonEl.textContent = `Vuélalo con: ${addonName}`;
+      } else {
+        addonEl.className = 'no-addon-tag';
+        addonEl.textContent = 'Sin addon sugerido para tu simulador';
+      }
+    }
+
+    function buildSimbriefUrl(route) {
+      const params = new URLSearchParams({
+        orig: route.depICAO,
+        dest: route.arrICAO,
+        fltnum: route.flightNum
+      });
+      if (route.aircraftType) {
+        params.set('type', route.aircraftType);
+      }
+      return `https://www.simbrief.com/system/dispatch.php?${params.toString()}`;
+    }
 
     function showError(msg) {
       errorMsg.textContent = msg;
@@ -293,7 +519,15 @@
       errorMsg.style.display = 'none';
     }
 
-    initAirlines();
+    function showStatus(msg) {
+      statusMsg.textContent = msg;
+    }
+
+    function hideStatus() {
+      statusMsg.textContent = '';
+    }
+
+    initCatalogs();
   </script>
 </body>
 </html>
