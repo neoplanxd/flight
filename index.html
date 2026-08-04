@@ -213,7 +213,7 @@
     <div class="subtitle">Xbox Flight Sim Companion</div>
 
     <div class="form-group">
-      <label for="platformSelect">SIMULADOR</label>
+      <label for="platformSelect">MI AVIÓN</label>
       <select id="platformSelect"></select>
     </div>
 
@@ -296,25 +296,29 @@
     }
 
     function initPlatformSelect() {
-      const platforms = addonsDB.platforms || {};
-      const keys = Object.keys(platforms);
+      const fleet = addonsDB.aircraft || [];
 
       platformSelect.innerHTML = '';
-      keys.forEach(key => {
+      fleet.forEach(plane => {
         const option = document.createElement('option');
-        option.value = key;
-        option.textContent = platforms[key].label || key;
+        option.value = plane.id;
+        option.textContent = plane.label;
         platformSelect.appendChild(option);
       });
 
       const saved = localStorage.getItem(PLATFORM_STORAGE_KEY);
-      if (saved && platforms[saved]) {
+      if (saved && fleet.some(p => p.id === saved)) {
         platformSelect.value = saved;
       }
 
       platformSelect.addEventListener('change', () => {
         localStorage.setItem(PLATFORM_STORAGE_KEY, platformSelect.value);
       });
+    }
+
+    function getMyAircraft() {
+      const fleet = addonsDB.aircraft || [];
+      return fleet.find(p => p.id === platformSelect.value) || null;
     }
 
     async function initAirlines() {
@@ -458,7 +462,7 @@
       document.getElementById('resDepCity').textContent = cityLabel(randomRoute.depICAO);
       document.getElementById('resArrCity').textContent = cityLabel(randomRoute.arrICAO);
 
-      renderAircraftInfo(randomRoute.aircraftType, randomRoute.fleetComment);
+      renderAircraftInfo(randomRoute.aircraftType);
 
       const simbriefUrl = buildSimbriefUrl(randomRoute);
       document.getElementById('simbriefLink').href = simbriefUrl;
@@ -472,29 +476,26 @@
       return entry.city || entry.name || '';
     }
 
-    function renderAircraftInfo(aircraftType, fleetComment) {
+    function renderAircraftInfo(scheduledType) {
       const box = document.getElementById('aircraftInfo');
       const typeEl = document.getElementById('aircraftType');
       const addonEl = document.getElementById('addonTag');
+      const myPlane = getMyAircraft();
 
-      if (!aircraftType) {
+      if (!scheduledType && !myPlane) {
         box.style.display = 'none';
         return;
       }
 
       box.style.display = 'block';
-      typeEl.textContent = aircraftType;
+      typeEl.textContent = scheduledType ? `Programado: ${scheduledType}` : 'Tipo programado desconocido';
 
-      const platformKey = platformSelect.value;
-      const platform = addonsDB.platforms && addonsDB.platforms[platformKey];
-      const addonName = platform && platform.aircraft && platform.aircraft[aircraftType];
-
-      if (addonName) {
+      if (myPlane) {
         addonEl.className = 'addon-tag';
-        addonEl.textContent = `Vuélalo con: ${addonName}`;
+        addonEl.textContent = `Vas a volarlo con: ${myPlane.label}`;
       } else {
         addonEl.className = 'no-addon-tag';
-        addonEl.textContent = 'Sin addon sugerido para tu simulador';
+        addonEl.textContent = 'Selecciona tu avión arriba';
       }
     }
 
@@ -504,7 +505,10 @@
         dest: route.arrICAO,
         fltnum: route.flightNum
       });
-      if (route.aircraftType) {
+      const myPlane = getMyAircraft();
+      if (myPlane) {
+        params.set('type', myPlane.icaoType);
+      } else if (route.aircraftType) {
         params.set('type', route.aircraftType);
       }
       return `https://www.simbrief.com/system/dispatch.php?${params.toString()}`;

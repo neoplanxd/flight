@@ -1,39 +1,26 @@
 {
-  "_doc": "Traduce un código ICAO de tipo de aeronave (ver aircraft-types.json) al addon disponible según la plataforma que uses. Es genérico y compartido por todas las aerolíneas. Si el tipo no existe para tu plataforma, la app simplemente no muestra sugerencia de addon (el vuelo se genera igual con el ICAO real para SimBrief).",
-  "platforms": {
-    "xbox-mfs2024": {
-      "label": "Xbox Series X · MFS2024 (default)",
-      "aircraft": {
-        "B38M": "737 MAX 8 (default)",
-        "A20N": "A320neo (iniBuilds)",
-        "A21N": "A321neo (iniBuilds)",
-        "A332": "A330-200 (iniBuilds)",
-        "A339": "A330-900neo (iniBuilds)"
-      }
-    },
-    "pc-mfs2024": {
-      "label": "PC · MFS2024 (addons)",
-      "aircraft": {
-        "A319": "A319 (Fenix)",
-        "A320": "A320 (Fenix)",
-        "A20N": "A320neo (Fenix)",
-        "A321": "A321 (Fenix)",
-        "A21N": "A321neo (Fenix)",
-        "B738": "737-800 (PMDG)",
-        "B38M": "737-8 MAX (iFly)"
-      }
-    },
-    "xplane12": {
-      "label": "X-Plane 12",
-      "aircraft": {
-        "A319": "A319 (ToLiss)",
-        "A320": "A320 ceo (ToLiss)",
-        "A20N": "A320 neo (ToLiss)",
-        "A321": "A321 ceo (ToLiss)",
-        "A21N": "A321 neo (ToLiss)",
-        "B752": "757 (FlightFactor)",
-        "B763": "767 (FlightFactor)"
-      }
-    }
-  }
+  "_doc": "Lista plana de los addons que tienes instalados, cada uno con el código ICAO real que SimBrief espera en el parámetro type= para auto-seleccionar el avión en tu perfil. Selecciona uno en 'MI AVIÓN' y se guarda en localStorage -- no depende de la aerolínea ni de la ruta generada.",
+  "aircraft": [
+    { "id": "xbox-b38m", "label": "737 MAX 8 (default) — Xbox", "icaoType": "B38M" },
+    { "id": "xbox-a20n", "label": "A320neo (iniBuilds) — Xbox", "icaoType": "A20N" },
+    { "id": "xbox-a21n", "label": "A321neo (iniBuilds) — Xbox", "icaoType": "A21N" },
+    { "id": "xbox-a332", "label": "A330-200 (iniBuilds) — Xbox", "icaoType": "A332" },
+    { "id": "xbox-a339", "label": "A330-900neo (iniBuilds) — Xbox", "icaoType": "A339" },
+
+    { "id": "pc-a319-fenix", "label": "A319 (Fenix) — PC", "icaoType": "A319" },
+    { "id": "pc-a320-fenix", "label": "A320 (Fenix) — PC", "icaoType": "A320" },
+    { "id": "pc-a20n-fenix", "label": "A320neo (Fenix) — PC", "icaoType": "A20N" },
+    { "id": "pc-a321-fenix", "label": "A321 (Fenix) — PC", "icaoType": "A321" },
+    { "id": "pc-a21n-fenix", "label": "A321neo (Fenix) — PC", "icaoType": "A21N" },
+    { "id": "pc-b738-pmdg", "label": "737-800 (PMDG) — PC", "icaoType": "B738" },
+    { "id": "pc-b38m-ifly", "label": "737-8 MAX (iFly) — PC", "icaoType": "B38M" },
+
+    { "id": "xp-a319-toliss", "label": "A319 (ToLiss) — X-Plane", "icaoType": "A319" },
+    { "id": "xp-a320-toliss", "label": "A320 ceo (ToLiss) — X-Plane", "icaoType": "A320" },
+    { "id": "xp-a20n-toliss", "label": "A320 neo (ToLiss) — X-Plane", "icaoType": "A20N" },
+    { "id": "xp-a321-toliss", "label": "A321 ceo (ToLiss) — X-Plane", "icaoType": "A321" },
+    { "id": "xp-a21n-toliss", "label": "A321 neo (ToLiss) — X-Plane", "icaoType": "A21N" },
+    { "id": "xp-b752-ff", "label": "757 (FlightFactor) — X-Plane", "icaoType": "B752" },
+    { "id": "xp-b763-ff", "label": "767 (FlightFactor) — X-Plane", "icaoType": "B763" }
+  ]
 }
