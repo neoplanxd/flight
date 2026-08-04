@@ -253,8 +253,13 @@
         <span id="addonTag"></span>
       </div>
       <div class="form-group" style="margin-top: 12px; margin-bottom: 12px;">
-        <label for="depTimeInput">HORA DE SALIDA (LOCAL)</label>
-        <input type="time" id="depTimeInput" style="width: 100%; padding: 14px; border-radius: 8px; font-size: 1rem; background-color: #0f172a; color: #f8fafc; border: 1px solid #334155;">
+        <label for="depHourSelect">HORA DE SALIDA (LOCAL)</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="depHourSelect" style="flex: 1;"></select>
+          <span style="color: #64748b; font-weight: 700;">:</span>
+          <select id="depMinuteSelect" style="flex: 1;"></select>
+          <button type="button" id="nowBtn" style="flex: 0 0 auto; width: auto; margin-top: 0; padding: 14px 16px; background-color: #334155;">Ahora</button>
+        </div>
       </div>
       <div class="form-group" style="margin-top: 12px; margin-bottom: 0;">
         <label for="platformSelect">MI AVIÓN</label>
@@ -293,6 +298,63 @@
         console.warn(`No se pudo cargar ${label}:`, err.message);
         return null;
       }
+    }
+
+    function initTimeSelects() {
+      const hourSelect = document.getElementById('depHourSelect');
+      const minuteSelect = document.getElementById('depMinuteSelect');
+      const nowBtn = document.getElementById('nowBtn');
+
+      hourSelect.innerHTML = '';
+      for (let h = 0; h < 24; h++) {
+        const opt = document.createElement('option');
+        opt.value = String(h).padStart(2, '0');
+        opt.textContent = String(h).padStart(2, '0');
+        hourSelect.appendChild(opt);
+      }
+
+      minuteSelect.innerHTML = '';
+      ['00', '15', '30', '45'].forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        minuteSelect.appendChild(opt);
+      });
+
+      const refreshLink = () => {
+        if (lastGeneratedRoute) {
+          document.getElementById('simbriefLink').href = buildSimbriefUrl(lastGeneratedRoute);
+        }
+      };
+
+      hourSelect.addEventListener('change', refreshLink);
+      minuteSelect.addEventListener('change', refreshLink);
+
+      nowBtn.addEventListener('click', () => {
+        const now = new Date();
+        hourSelect.value = String(now.getHours()).padStart(2, '0');
+        // redondea minutos al múltiplo de 15 más cercano disponible en el select
+        const roundedMin = ['00', '15', '30', '45'][Math.round(now.getMinutes() / 15) % 4];
+        minuteSelect.value = roundedMin;
+        refreshLink();
+      });
+    }
+
+    function setDepTime(timeOfDay) {
+      const [hh, mm] = timeOfDay.split(':');
+      document.getElementById('depHourSelect').value = hh;
+      // el schedule real puede traer minutos que no son múltiplos de 15; se
+      // ajusta al más cercano disponible en el select para mantenerlo simple en touch
+      const roundedMin = ['00', '15', '30', '45'].reduce((closest, m) => {
+        return Math.abs(parseInt(m) - parseInt(mm)) < Math.abs(parseInt(closest) - parseInt(mm)) ? m : closest;
+      }, '00');
+      document.getElementById('depMinuteSelect').value = roundedMin;
+    }
+
+    function getDepTimeValue() {
+      const hh = document.getElementById('depHourSelect').value;
+      const mm = document.getElementById('depMinuteSelect').value;
+      return `${hh}:${mm}`;
     }
 
     async function initCatalogs() {
@@ -510,7 +572,7 @@
       document.getElementById('resFlight').textContent = randomRoute.flightNum;
       document.getElementById('resDuration').textContent = formatDuration(randomRoute.durationMinutes);
       document.getElementById('resDep').textContent = randomRoute.depICAO;
-      document.getElementById('depTimeInput').value = randomRoute.depTimeOfDay;
+      setDepTime(randomRoute.depTimeOfDay);
       document.getElementById('resArr').textContent = randomRoute.arrICAO;
       document.getElementById('resDepCity').textContent = cityLabel(randomRoute.depICAO);
       document.getElementById('resArrCity').textContent = cityLabel(randomRoute.arrICAO);
@@ -521,12 +583,6 @@
       document.getElementById('simbriefLink').href = simbriefUrl;
 
       resultBox.style.display = 'block';
-    });
-
-    document.getElementById('depTimeInput').addEventListener('change', () => {
-      if (lastGeneratedRoute) {
-        document.getElementById('simbriefLink').href = buildSimbriefUrl(lastGeneratedRoute);
-      }
     });
 
     function cityLabel(icao) {
@@ -577,7 +633,7 @@
         stem: String(route.durationMinutes % 60)
       });
 
-      const timeInput = document.getElementById('depTimeInput').value;
+      const timeInput = getDepTimeValue();
       if (timeInput) {
         const [hh, mm] = timeInput.split(':');
         params.set('deph', hh);
@@ -613,6 +669,7 @@
       statusMsg.textContent = '';
     }
 
+    initTimeSelects();
     initCatalogs();
   </script>
 </body>
