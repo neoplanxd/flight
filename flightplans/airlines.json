@@ -1,16 +1,16 @@
 {
   "airlines": [
-    { "name": "AeroMexico", "file": "aeromexico.txt" },
-    { "name": "AeroMexico Connect", "file": "connect.txt" },
-    { "name": "Interjet", "file": "interjet.txt" },
-    { "name": "Viva Aerobus", "file": "viva.txt" },
-    { "name": "Jetblue", "file": "jetblue.txt" },
-    { "name": "SAS", "file": "sas.txt" },
-    { "name": "Arajet", "file": "arajet.txt" },
-    { "name": "Transvia", "file": "transvia.txt" },
-    { "name": "Lufthansa", "file": "lufthansa.txt" },
-    { "name": "British", "file": "british.txt" },
-    { "name": "Air Canada", "file": "canada.txt" },
-    { "name": "Iberia", "file": "iberia.txt" }
+    { "name": "AeroMexico", "file": "aeromexico.txt", "icao": "AMX" },
+    { "name": "AeroMexico Connect", "file": "connect.txt", "icao": "SLI" },
+    { "name": "Interjet", "file": "interjet.txt", "icao": "AIJ" },
+    { "name": "Viva Aerobus", "file": "viva.txt", "icao": "VIV" },
+    { "name": "Jetblue", "file": "jetblue.txt", "icao": "JBU" },
+    { "name": "SAS", "file": "sas.txt", "icao": "SAS" },
+    { "name": "Arajet", "file": "arajet.txt", "icao": "RJT" },
+    { "name": "Transvia", "file": "transvia.txt", "icao": "TVF" },
+    { "name": "Lufthansa", "file": "lufthansa.txt", "icao": "DLH" },
+    { "name": "British", "file": "british.txt", "icao": "BAW" },
+    { "name": "Air Canada", "file": "canada.txt", "icao": "ACA" },
+    { "name": "Iberia", "file": "iberia.txt", "icao": "IBE" }
   ]
 }

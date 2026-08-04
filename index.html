@@ -225,7 +225,7 @@
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="resultBox" class="result-box">
-      <div class="flight-num">VUELO <span id="resFlight">----</span></div>
+      <div class="flight-num">VUELO <span id="resFlight">----</span> · <span id="resDuration">--</span></div>
       <div class="route-display">
         <div class="route-col">
           <span id="resDep" class="icao">----</span>
@@ -261,6 +261,7 @@
     const PLATFORM_STORAGE_KEY = 'dispatchPortal.platform';
 
     let currentRoutes = [];
+    let currentAirlineIcao = null;
     let lastFlightNum = null;
     let lastGeneratedRoute = null;
     let airportsDB = {};
@@ -337,6 +338,7 @@
           const option = document.createElement('option');
           option.value = item.file;
           option.textContent = item.name;
+          option.dataset.icao = item.icao || '';
           airlineSelect.appendChild(option);
         });
       } catch (err) {
@@ -349,6 +351,7 @@
 
     airlineSelect.addEventListener('change', async (e) => {
       const fileName = e.target.value;
+      currentAirlineIcao = e.target.selectedOptions[0] ? (e.target.selectedOptions[0].dataset.icao || null) : null;
       resultBox.style.display = 'none';
       hideError();
       hideStatus();
@@ -392,6 +395,28 @@
       return null;
     }
 
+    // Convierte "día/HH:MM" (día 0-6 dentro de la semana del schedule) a minutos totales
+    function scheduleTimeToMinutes(dayTime) {
+      const [day, hm] = dayTime.split('/');
+      const [hh, mm] = hm.split(':');
+      return parseInt(day, 10) * 1440 + parseInt(hh, 10) * 60 + parseInt(mm, 10);
+    }
+
+    // Duración del tramo en minutos, manejando el cruce de fin de semana (día 6 -> día 0)
+    function legDurationMinutes(depTime, arrTime) {
+      const dep = scheduleTimeToMinutes(depTime);
+      const arr = scheduleTimeToMinutes(arrTime);
+      let diff = arr - dep;
+      if (diff <= 0) diff += 7 * 1440;
+      return diff;
+    }
+
+    function formatDuration(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${h}h ${String(m).padStart(2, '0')}m`;
+    }
+
     function parseAigFile(text) {
       const lines = text.split(/\r?\n/);
       const parsedRoutes = [];
@@ -408,7 +433,7 @@
           return;
         }
 
-        const matches = [...trimmed.matchAll(/,([0-9]{1,4}),([A-Z]{4})\b/g)];
+        const matches = [...trimmed.matchAll(/(\d{1,2}\/\d{2}:\d{2}),@(\d{1,2}\/\d{2}:\d{2}),(\d{2,3}),F,(\d{1,4}),([A-Z]{4})\b/g)];
 
         // Si solo hay un tramo en la línea no hay forma confiable de saber el
         // aeropuerto de origen (no sabemos la base real de esa matrícula), así
@@ -416,11 +441,10 @@
         if (matches.length < 2) return;
 
         for (let i = 0; i < matches.length; i++) {
-          const flightNum = matches[i][1];
-          const arrICAO = matches[i][2];
+          const [, depTime, arrTime, , flightNum, arrICAO] = matches[i];
           // Ruta circular: el origen del primer tramo es el destino del último
           // tramo de la semana (la aeronave regresa a su base).
-          const depICAO = i > 0 ? matches[i - 1][2] : matches[matches.length - 1][2];
+          const depICAO = i > 0 ? matches[i - 1][5] : matches[matches.length - 1][5];
 
           if (depICAO !== arrICAO) {
             parsedRoutes.push({
@@ -428,7 +452,8 @@
               depICAO: depICAO,
               arrICAO: arrICAO,
               aircraftType: currentAircraftType,
-              fleetComment: currentFleetComment
+              fleetComment: currentFleetComment,
+              durationMinutes: legDurationMinutes(depTime, arrTime)
             });
           }
         }
@@ -463,6 +488,7 @@
       lastGeneratedRoute = randomRoute;
 
       document.getElementById('resFlight').textContent = randomRoute.flightNum;
+      document.getElementById('resDuration').textContent = formatDuration(randomRoute.durationMinutes);
       document.getElementById('resDep').textContent = randomRoute.depICAO;
       document.getElementById('resArr').textContent = randomRoute.arrICAO;
       document.getElementById('resDepCity').textContent = cityLabel(randomRoute.depICAO);
@@ -511,6 +537,9 @@
         dest: route.arrICAO,
         fltnum: route.flightNum
       });
+      if (currentAirlineIcao) {
+        params.set('airline', currentAirlineIcao);
+      }
       const myPlane = getMyAircraft();
       if (myPlane) {
         params.set('type', myPlane.icaoType);
