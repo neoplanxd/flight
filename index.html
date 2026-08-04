@@ -282,9 +282,9 @@
 
     async function initCatalogs() {
       const [airports, types, addons] = await Promise.all([
-        loadJSON('airports.json', 'airports.json'),
-        loadJSON('aircraft-types.json', 'aircraft-types.json'),
-        loadJSON('aircraft-addons.json', 'aircraft-addons.json')
+        loadJSON('flightplans/airports.json', 'airports.json'),
+        loadJSON('flightplans/aircraft-types.json', 'aircraft-types.json'),
+        loadJSON('flightplans/aircraft-addons.json', 'aircraft-addons.json')
       ]);
 
       airportsDB = airports || {};
